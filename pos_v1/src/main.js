@@ -1,5 +1,44 @@
+function getBarcodeType( input_barcode )
+{
+	switch ( input_barcode.length )
+	{
+		case 10:
+			return "common";
+		default:
+			return "with_count";
+	}
+}
+
+function addCommonItem( item_list, input_barcode )
+{
+	if ( !(input_barcode in item_list) )
+	{
+		item_list[input_barcode] = { number : 0 };
+	}
+	item_list[input_barcode].number += 1;
+}
+
+function addWithCountItem( item_list, input_barcode )
+{
+	var barcode = input_barcode.substring(0, 10);
+	var count = Number( input_barcode.substring(11, input_barcode.length) );
+	
+	item_list[barcode] = { number : count };
+}
+
 function addItemToList( item_list, input_barcode )
-{}
+{
+	switch ( getBarcodeType( input_barcode ) )
+	{
+		case "common" :
+			addCommonItem( item_list, input_barcode );
+			break;
+		case "with_count" :
+			addWithCountItem( item_list, input_barcode );
+			break;
+	}
+}
+
 function calculateItemPromotions( item_list, list_key )
 {}
 function printItemCountAndPrice( item_list )
@@ -11,7 +50,7 @@ function printTotalPrice( item_list )
 
 function countItem( cart_barcode_list )
 {
-	var item_list;
+	var item_list = {};
 	//item_list的属性为右格式 条形码:{total_count, promotions_count}
 	
 	for ( index in cart_barcode_list )
