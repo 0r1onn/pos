@@ -1,4 +1,4 @@
-function getBarcodeType( input_barcode )
+﻿function getBarcodeType( input_barcode )
 {
 	switch ( input_barcode.length )
 	{
@@ -13,9 +13,9 @@ function addCommonItem( item_list, input_barcode )
 {
 	if ( !(input_barcode in item_list) )
 	{
-		item_list[input_barcode] = { number : 0 };
+		item_list[input_barcode] = { total_count : 0 , promotions_count : 0 };
 	}
-	item_list[input_barcode].number += 1;
+	item_list[input_barcode].total_count += 1;
 }
 
 function addWithCountItem( item_list, input_barcode )
@@ -23,7 +23,7 @@ function addWithCountItem( item_list, input_barcode )
 	var barcode = input_barcode.substring(0, 10);
 	var count = Number( input_barcode.substring(11, input_barcode.length) );
 	
-	item_list[barcode] = { number : count };
+	item_list[barcode] = { total_count : count , promotions_count : 0 };
 }
 
 function addItemToList( item_list, input_barcode )
@@ -39,19 +39,88 @@ function addItemToList( item_list, input_barcode )
 	}
 }
 
-function calculateItemPromotions( item_list, list_key )
-{}
-function printItemCountAndPrice( item_list )
-{}
-function printPromotionsCount( item_list )
-{}
-function printTotalPrice( item_list )
-{}
+function buyTwoGetOneFreePromotions( item_list, promotions_barcodes_list )
+{
+	for ( index in promotions_barcodes_list )
+	{
+		if ( promotions_barcodes_list[index] in item_list )
+		{
+			item_list[promotions_barcodes_list[index]].promotions_count = parseInt( item_list[promotions_barcodes_list[index]].total_count / 3 );
+		}
+	}
+}
 
+function calculateItemPromotions( item_list, promotions_item )
+{
+	switch ( promotions_item["type"] )
+	{
+		case 'BUY_TWO_GET_ONE_FREE':
+			buyTwoGetOneFreePromotions( item_list, promotions_item.barcodes );
+			break;
+	}
+}
+function printTitle( out_string )
+{
+	return (out_string += "***<没钱赚商店>购物清单***\n");
+}
+function printItemCountAndPrice( item_list, out_string )
+{
+	var cart_barcode = Object.keys( item_list );
+	var all_items = loadAllItems();
+	
+	for ( index in cart_barcode )
+	{
+		var index_of_items = parseInt(cart_barcode[index].substring(4, 10));
+		out_string += "名称：" + all_items[index_of_items].name + "，数量：" + item_list[cart_barcode[index]].total_count + all_items[index_of_items].unit + "，单价：" + all_items[index_of_items].price.toFixed(2) + "(元)，小计：" + (all_items[index_of_items].price * (item_list[cart_barcode[index]].total_count - item_list[cart_barcode[index]].promotions_count)).toFixed(2) + "(元)\n";
+	}
+	out_string += "----------------------\n";
+	return out_string;
+}
+function printPromotionsCount( item_list, out_string )
+{
+	var cart_barcode = Object.keys( item_list );
+	var all_items = loadAllItems();
+	
+	out_string += "挥泪赠送商品：\n";
+	for ( index in cart_barcode )
+	{
+		var index_of_items = parseInt(cart_barcode[index].substring(4, 10));
+		if ( item_list[cart_barcode[index]].promotions_count )
+		{
+			out_string += "名称：" + all_items[index_of_items].name + "，数量：" + item_list[cart_barcode[index]].promotions_count + all_items[index_of_items].unit + "\n";
+		}
+	}
+	out_string += "----------------------\n";
+	return out_string;
+}
+
+function printTotalPrice( item_list, out_string )
+{
+	var cart_barcode = Object.keys( item_list );
+	var all_items = loadAllItems();
+	var total_price = 0;
+	var promotion_price = 0;
+	
+	for ( index in cart_barcode )
+	{
+		var index_of_items = parseInt(cart_barcode[index].substring(4, 10));
+		total_price += item_list[cart_barcode[index]].total_count * all_items[index_of_items].price;
+		if ( item_list[cart_barcode[index]].promotions_count )
+		{
+			promotion_price += item_list[cart_barcode[index]].promotions_count * all_items[index_of_items].price;
+		}
+	}
+	total_price -= promotion_price;
+	out_string += "总计：" + total_price.toFixed(2) + "(元)\n";
+	out_string += "节省：" + promotion_price.toFixed(2) + "(元)\n";
+	out_string += "**********************";
+	return out_string;
+}
+
+/**/
 function countItem( cart_barcode_list )
 {
 	var item_list = {};
-	//item_list的属性为右格式 条形码:{total_count, promotions_count}
 	
 	for ( index in cart_barcode_list )
 	{
@@ -61,37 +130,29 @@ function countItem( cart_barcode_list )
 }
 function calculatePromotions( item_list )
 {
-	var item_list_key = Object.keys( item_list );
-	for ( index in item_list_key )
+	var promotions = loadPromotions();
+	for ( index in promotions )
 	{
-		calculateItemPromotions( item_list, item_list_key[index] );
+		calculateItemPromotions( item_list, promotions[index] );
 	}
 }
+
 function printPriceList( item_list )
 {
-/*
-	var result = '***<没钱赚商店>购物清单***\n' +
-            '名称：雪碧，数量：5瓶，单价：3.00(元)，小计：12.00(元)\n' +
-            '名称：荔枝，数量：2斤，单价：15.00(元)，小计：30.00(元)\n' +
-            '名称：方便面，数量：3袋，单价：4.50(元)，小计：9.00(元)\n' +
-            '----------------------\n' +
-            '挥泪赠送商品：\n' +
-            '名称：雪碧，数量：1瓶\n' +
-            '名称：方便面，数量：1袋\n' +
-            '----------------------\n' +
-            '总计：51.00(元)\n' +
-            '节省：7.50(元)\n' +
-            '**********************';
-	console.log(result);
-*/
-	printItemCountAndPrice( item_list );
-	printPromotionsCount( item_list );
-	printTotalPrice( item_list );
+	var print_string = "";
+	
+	print_string = printTitle( print_string );
+	print_string = printItemCountAndPrice( item_list, print_string );
+	print_string = printPromotionsCount( item_list, print_string );
+	print_string = printTotalPrice( item_list, print_string );
+	
+	console.log(print_string);
 }
-
+/**/
 function printInventory( cart_barcode_list )
 {
 	var item_list;
+	//item_list的属性为右格式 条形码:{total_count, promotions_count}
 	
 	item_list = countItem( cart_barcode_list );
 	calculatePromotions( item_list );
