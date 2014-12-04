@@ -98,8 +98,7 @@ function printTotalPrice( item_list, out_string )
 {
 	var cart_barcode = Object.keys( item_list );
 	var all_items = loadAllItems();
-	var total_price = 0;
-	var promotion_price = 0;
+	var total_price = 0, promotion_price = 0;
 	
 	for ( index in cart_barcode )
 	{
@@ -111,10 +110,7 @@ function printTotalPrice( item_list, out_string )
 		}
 	}
 	total_price -= promotion_price;
-	out_string += "总计：" + total_price.toFixed(2) + "(元)\n";
-	out_string += "节省：" + promotion_price.toFixed(2) + "(元)\n";
-	out_string += "**********************";
-	return out_string;
+	return (out_string += "总计：" + total_price.toFixed(2) + "(元)\n" + "节省：" + promotion_price.toFixed(2) + "(元)\n" + "**********************");
 }
 
 /**/
