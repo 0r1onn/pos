@@ -2,7 +2,7 @@
 {
 	switch ( input_barcode.length )
 	{
-		case 10:
+		case 10:	//How to avoid magic number?
 			return "common";
 		default:
 			return "with_count";
