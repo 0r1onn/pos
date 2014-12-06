@@ -150,9 +150,6 @@ function printInventory( cart_barcode_list )
 	var item_list;
 	//item_list的属性为右格式 条形码:{total_count, promotions_count}
 	
-	
-	
-	
 	item_list = countItem( cart_barcode_list );
 	calculatePromotions( item_list );
 	printPriceList( item_list );
