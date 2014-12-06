@@ -152,6 +152,7 @@ function printInventory( cart_barcode_list )
 	
 	
 	
+	
 	item_list = countItem( cart_barcode_list );
 	calculatePromotions( item_list );
 	printPriceList( item_list );
